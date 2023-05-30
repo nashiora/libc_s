@@ -30,11 +30,9 @@ fopen_result fopen_wrapper(const char* file, const char* mode);
 
 fclose_err fclose_wrapper(FILE* stream);
 
-
 #if defined(LIBC_S_STDIO_IMPLEMENTATION) || defined(LIBC_S_IMPLEMENTATION)
 
 fopen_result fopen_wrapper(const char* file, const char* mode)
-
 {
   fopen_result result = { 0 };
   errno = 0;
@@ -43,8 +41,8 @@ fopen_result fopen_wrapper(const char* file, const char* mode)
   else result.value = libcResult;
   return result;
 }
-fclose_err fclose_wrapper(FILE* stream)
 
+fclose_err fclose_wrapper(FILE* stream)
 {
   fclose_err result = 0;
   errno = 0;
@@ -52,6 +50,7 @@ fclose_err fclose_wrapper(FILE* stream)
   if (errno != 0) result = errno;
   return result;
 }
+
 
 #endif // defined(LIBC_S_STDIO_IMPLEMENTATION) || defined(LIBC_S_IMPLEMENTATION)
 
