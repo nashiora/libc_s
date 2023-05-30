@@ -7,6 +7,7 @@
 #include <string.h>
 
 #ifdef USE_LIBC_S
+#define LIBC_S_IMPLEMENTATION
 #include "libc_s/stdio.h"
 #else
 #include <stdio.h>
@@ -25,9 +26,7 @@
 "  FOPEN_READ_ONLY = EROFS,\n" \
 "  FOPEN_CROSS_DEVICE_LINK = EXDEV,\n" \
 "  FOPEN_TEXT_FILE_BUSY = ETXTBSY,\n" \
-"} fopen_err;\n" \
-"\n" \
-"typedef either(FILE*, fopen_err) fopen_result;"
+"} fopen_err;\n"
 
 typedef struct libc_header_and_preamble
 {
@@ -58,7 +57,7 @@ const libc_header_and_preamble libcHeaderFiles[] = {
 #define LIBC_HEADER_COUNT (sizeof(libcHeaderFiles) / sizeof(libc_header_and_preamble) - 1)
 
 const libc_data libcData[] = {
-    { "stdio.h", "fopen", "FILE*", "fopen_result", LIBC_ERR_ERRNO,
+    { "stdio.h", "fopen", "FILE*", "fopen_err", LIBC_ERR_ERRNO,
       "const char* file, const char* mode", "file, mode" },
     { 0 },
 };
@@ -115,7 +114,6 @@ int main(int argc, char** argv)
         fprintf(headerFile, "#ifndef LIBC_S_%s_H\n#define LIBC_S_%s_H\n\n", headerNameBuffer, headerNameBuffer);
         fprintf(headerFile, "#include <errno.h>\n#include <%s>\n\n", headerFileName);
 
-        fprintf(headerFile, "#define either(T, E) struct { T value; E error; }\n\n");
         fprintf(headerFile, "%s\n\n", headerPreamble);
 
         for (int i = 0; i < LIBC_DATA_COUNT; i++)
@@ -123,6 +121,13 @@ int main(int argc, char** argv)
             libc_data data = libcData[i];
             if (strcmp(headerFileName, data.libcHeaderFile))
                 continue;
+                
+            bool isVoid = data.libcReturnType == NULL;
+
+            if (!isVoid)
+            {
+                fprintf(headerFile, "typedef struct { %s value; %s error; } %s_result;\n", data.libcReturnType, data.wrapperReturnType, data.libcFunctionName);
+            }
 
             write_wrapper_prototype(headerFile, data);
             fprintf(headerFile, ";\n");
@@ -158,7 +163,17 @@ int main(int argc, char** argv)
 
 static void write_wrapper_prototype(FILE* stream, libc_data data)
 {
-    fprintf(stream, "%s %s_wrapper(%s)", data.wrapperReturnType, data.libcFunctionName, data.wrapperParams);
+    bool useErrno = data.libcErrorKind == LIBC_ERR_ERRNO;
+    bool isVoid = data.libcReturnType == NULL;
+
+    if (isVoid)
+    {
+        fprintf(stream, "%s %s_wrapper(%s)", data.libcReturnType, data.libcFunctionName, data.wrapperParams);
+    }
+    else
+    {
+        fprintf(stream, "%s_result %s_wrapper(%s)", data.libcFunctionName, data.libcFunctionName, data.wrapperParams);
+    }
 }
 
 static void write_wrapper_body(FILE* stream, libc_data data)
@@ -168,13 +183,13 @@ static void write_wrapper_body(FILE* stream, libc_data data)
 
     fprintf(stream, "{\n");
 
-    if (!isVoid)
+    if (isVoid)
     {
         fprintf(stream, "  %s result = 0;\n", data.wrapperReturnType);
     }
     else
     {
-        fprintf(stream, "  %s result = { 0 };\n", data.wrapperReturnType);
+        fprintf(stream, "  %s_result result = { 0 };\n", data.libcFunctionName);
     }
 
     if (useErrno)

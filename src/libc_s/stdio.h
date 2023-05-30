@@ -4,8 +4,6 @@
 #include <errno.h>
 #include <stdio.h>
 
-#define either(T, E) struct { T value; E error; }
-
 typedef enum fopen_err {
   FOPEN_NO_ACCESS = EACCES,
   FOPEN_BAD_FILE_DESCRIPTOR = EBADF,
@@ -21,15 +19,15 @@ typedef enum fopen_err {
   FOPEN_TEXT_FILE_BUSY = ETXTBSY,
 } fopen_err;
 
-typedef either(FILE*, fopen_err) fopen_result;
 
+typedef struct { FILE* value; fopen_err error; } fopen_result;
 fopen_result fopen_wrapper(const char* file, const char* mode);
 
 #if defined(LIBC_S_STDIO_IMPLEMENTATION) || defined(LIBC_S_IMPLEMENTATION)
 
 fopen_result fopen_wrapper(const char* file, const char* mode)
 {
-  fopen_result result = 0;
+  fopen_result result = { 0 };
   errno = 0;
   FILE* libcResult = fopen(file, mode);
   if (errno != 0) result.error = errno;
