@@ -113,8 +113,7 @@ int main(int argc, char** argv)
         }
         fprintf(headerFile, "#ifndef LIBC_S_%s_H\n#define LIBC_S_%s_H\n\n", headerNameBuffer, headerNameBuffer);
         fprintf(headerFile, "#include <errno.h>\n#include <%s>\n\n", headerFileName);
-
-        fprintf(headerFile, "%s\n\n", headerPreamble);
+        fprintf(headerFile, "%s\n", headerPreamble);
 
         for (int i = 0; i < LIBC_DATA_COUNT; i++)
         {
