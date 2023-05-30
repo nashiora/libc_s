@@ -51,7 +51,6 @@ fclose_err fclose_wrapper(FILE* stream)
   return result;
 }
 
-
 #endif // defined(LIBC_S_STDIO_IMPLEMENTATION) || defined(LIBC_S_IMPLEMENTATION)
 
 #define fopen(file, mode) fopen_wrapper(file, mode)

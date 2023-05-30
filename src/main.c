@@ -167,7 +167,7 @@ int main(int argc, char** argv)
             write_wrapper_body(headerFile, data);
             fprintf(headerFile, "\n");
         }
-        fprintf(headerFile, "\n#endif // defined(LIBC_S_%s_IMPLEMENTATION) || defined(LIBC_S_IMPLEMENTATION)\n\n", headerNameBuffer);
+        fprintf(headerFile, "#endif // defined(LIBC_S_%s_IMPLEMENTATION) || defined(LIBC_S_IMPLEMENTATION)\n\n", headerNameBuffer);
 
         for (int i = 0; i < LIBC_DATA_COUNT; i++)
         {
