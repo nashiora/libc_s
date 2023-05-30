@@ -19,7 +19,6 @@ typedef enum fopen_err {
   FOPEN_TEXT_FILE_BUSY = ETXTBSY,
 } fopen_err;
 
-
 typedef struct { FILE* value; fopen_err error; } fopen_result;
 fopen_result fopen_wrapper(const char* file, const char* mode);
 
